@@ -11,31 +11,19 @@
 # Add labels for graphs
 
 import numpy as np
+import pandas as pd
 import matplotlib.pyplot as plt
 
-# Each point represents a person; their age and salary, 
-# and whether or not they would buy a product
-fPeopleList = [[64.0, 73000.0, 1],
-               [27.0, 37000.0, 0],
-               [30.0, 45000.0, 0],
-               [38.0, 50000.0, 0],
-               [35.0, 49000.0, 0],
-               [68.0, 78000.0, 1],
-               [70.0, 84000.0, 1],
-               [75.0, 96000.0, 1],
-               [73.0, 82000.0, 1],
-               [40.0, 35000.0, 0],
-               [32.0, 38000.0, 0],
-               [70.0, 70000.0, 1],
-               [22.0,  9000.0, 0],
-               [70.0, 65000.0, 1],
-               [74.0, 80000.0, 1]]
+# Each tuple represents a person; their age and salary, 
+# and whether or not they would buy a eg. a house
+DataF=pd.read_excel("dataset.xlsx",sheet_name='sheet1')
+fPeopleList = DataF.values
 
 # A person which only age, and salary is known
-fPerson = [50.0, 50000.0]
+fPerson = [40.0, 80000.0]
 
-iDATAAXISX = 100000
-iDATAAXISY = 80
+iDATAAXISX = 105000
+iDATAAXISY = 105
 
 fLEARNINGSPEED = 0.02
 
@@ -49,6 +37,18 @@ def make_graph():
     plt.axis([0, iDATAAXISY, 0, iDATAAXISX])
     plt.grid()
     
+    # Display points which are most likely (non)purchase
+    for i in range(0,51):
+        for e in range(0, 51):
+            col = "yellow"
+            num = (i/fW1Coeff * w1*2) + (e*1000/fW2Coeff * w2*2) + b
+            ped = neuron(num)
+            if ped >= 0.5:
+                col = "green"
+        
+            plt.scatter(i*2,2*e*1000,c=col)
+    plt.plot([0,105],[0,105000], color = 'k', linestyle='-',linewidth=4)
+    
     # Plot each point
     for i in range(len(fPeopleList)):
         point = fPeopleList[i]
@@ -60,6 +60,7 @@ def make_graph():
         plt.scatter(point[0], point[1], c = colour) #c= colour
     
     plt.scatter(fPerson[0], fPerson[1], c = "purple")
+    
     plt.show()
 
 # Prevents super very numbers
@@ -75,7 +76,7 @@ def sigmoid(x):
 def sigmoid_deriv(y):
     return sigmoid(y) * (1.0 - sigmoid(y))
 
-#Takes in the sum of inputs to the neuron and applies a function (sigmoid)
+# Takes in the sum of inputs to the neuron and applies a function (sigmoid)
 def neuron(x):
     return sigmoid(x)
 
@@ -102,13 +103,13 @@ for i in range(iITERATIONS):
     
     fInputSum = (point[0]/fW1Coeff * w1) + (point[1]/fW2Coeff * w2) + b
 
-    #What the NN thinks the answer is
+    # What the NN thinks the answer is
     prediction = neuron(fInputSum)
     prediction = getridofe(prediction)
     #What the actual answer is
     target = point[2]
             
-    #Cost Function
+    # Cost Function
     cost = np.square( prediction - target )
     cost = getridofe(cost)
 
@@ -123,7 +124,7 @@ for i in range(iITERATIONS):
     cost_prediction_deriv = 2 * (prediction - target)
     prediction_deriv = sigmoid_deriv(fInputSum)
     
-    #Derivatives of fInputSum with respect to ...
+    # Derivatives of fInputSum with respect to ...
     fInputSum_w1_deriv = point[0]/fW1Coeff
     fInputSum_w2_deriv = point[1]/fW2Coeff
     fInputSum_b_deriv = 1
@@ -134,16 +135,16 @@ for i in range(iITERATIONS):
     cost_deriv_w2 = cost_prediction_deriv * prediction_deriv * fInputSum_w2_deriv
     cost_deriv_b = cost_prediction_deriv * prediction_deriv * fInputSum_b_deriv
     
-    #With each iteration each variable gets closer to f'(0)
+    # With each iteration each variable gets closer to f'(0)
     w1 = w1 - (fLEARNINGSPEED * cost_deriv_w1)
     w2 = w2 - (fLEARNINGSPEED * cost_deriv_w2)
     b = b - (fLEARNINGSPEED * cost_deriv_b)
 
-#Now that the NN is trained, predict the missing data
+# Now that the NN is trained, predict the missing data
 fInputSum = (fPerson[0]/fW1Coeff * w1) + (fPerson[1]/fW2Coeff * w2) + b
 prediction = neuron(fInputSum)
 
-#Display whether or not cost is actually decreasing or not    
+# Display whether or not cost is actually decreasing or not    
 plt.figure(1)
 make_graph()
 plt.figure(2)
